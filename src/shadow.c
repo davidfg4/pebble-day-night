@@ -9,6 +9,7 @@ static TextLayer *time_text_layer;
 static TextLayer *date_text_layer;
 static GBitmap *world_bitmap;
 static Layer *canvas;
+// this is a manually created bitmap, of the same size as world_bitmap
 static GBitmap image;
 static int redraw_counter;
 // s is set to memory of size STR_SIZE, and temporarily stores strings
@@ -17,10 +18,10 @@ char *s;
 int time_offset;
 
 static void draw_earth() {
+  // ##### calculate the time
   int now = (int)time(NULL) + time_offset;
   float day_of_year; // value from 0 to 1 of progress through a year
   float time_of_day; // value from 0 to 1 of progress through a day
-  // ##### calculate the time
   // approx number of leap years since epoch
   // = now / SECONDS_IN_YEAR * .24; (.24 = average rate of leap years)
   int leap_years = (int)((float)now / 131487192.0);
@@ -30,11 +31,11 @@ static void draw_earth() {
   time_of_day = day_of_year - (int)day_of_year;
   day_of_year = day_of_year / 365.0;
   // ##### calculate the position of the sun
-  // left of world to right goes from 0 to 65536
+  // left to right of world goes from 0 to 65536
   int sun_x = (int)((float)TRIG_MAX_ANGLE * (1.0 - time_of_day));
   // bottom to top of world goes from -32768 to 32768
   // 0.2164 is march 20, the 79th day of the year, the march equinox
-  // Earth's inclination is 23.4 degrees, so sun should vary 23.4/90=.26 up and down (tweaked to .20 to look better)
+  // Earth's inclination is 23.4 degrees, so sun should vary 23.4/90=.26 up and down
   int sun_y = -sin_lookup((day_of_year - 0.2164) * TRIG_MAX_ANGLE) * .26 * .25;
   // ##### draw the bitmap
   int x, y;
@@ -64,7 +65,6 @@ static void draw_watch(struct Layer *layer, GContext *ctx) {
 
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   static char time_text[] = "00:00";
-  //static char date_text[] = "Xxx, Xxxxxxxxx 00";
   static char date_text[] = "Xxxxxxxxx, Xxx 00";
 
   strftime(date_text, sizeof(date_text), "%A, %b %e", tick_time);
