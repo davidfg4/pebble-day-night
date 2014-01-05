@@ -1,0 +1,23 @@
+{
+  "uuid": "2ca6b5d8-09a2-4836-894d-a928311820f9",
+  "shortName": "Day Night",
+  "longName": "Day and Night Earth Watchface",
+  "companyName": "David Gianforte",
+  "versionCode": 1,
+  "versionLabel": "1.0.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": [
+      {
+        "type": "png",
+        "name": "WORLD",
+        "file": "world.png"
+      }
+    ]
+  }
+}
