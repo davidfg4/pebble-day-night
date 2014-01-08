@@ -4,7 +4,7 @@
   "longName": "Day and Night Earth Watchface",
   "companyName": "David Gianforte",
   "versionCode": 1,
-  "versionLabel": "1.1",
+  "versionLabel": "1.2",
   "watchapp": {
     "watchface": true
   },

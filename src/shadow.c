@@ -70,9 +70,9 @@ static void draw_watch(struct Layer *layer, GContext *ctx) {
 
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   static char time_text[] = "00:00";
-  static char date_text[] = "Xxxxxxxxx, Xxx 00";
+  static char date_text[] = "Xxx, Xxx 00";
 
-  strftime(date_text, sizeof(date_text), "%A, %b %e", tick_time);
+  strftime(date_text, sizeof(date_text), "%a, %b %e", tick_time);
   text_layer_set_text(date_text_layer, date_text);
 
   if (clock_is_24h_style()) {
