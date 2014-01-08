@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "config.h"
 
 #define STR_SIZE 20
 #define TIME_OFFSET_PERSIST 1
@@ -19,7 +20,11 @@ int time_offset;
 
 static void draw_earth() {
   // ##### calculate the time
+#ifdef UTC_OFFSET
+  int now = (int)time(NULL) + -3600 * UTC_OFFSET;
+#else
   int now = (int)time(NULL) + time_offset;
+#endif
   float day_of_year; // value from 0 to 1 of progress through a year
   float time_of_day; // value from 0 to 1 of progress through a day
   // approx number of leap years since epoch
@@ -98,31 +103,46 @@ static void app_message_inbox_received(DictionaryIterator *iterator, void *conte
 }
 
 static void window_load(Window *window) {
+#ifdef BLACK_ON_WHITE
+  window_set_background_color(window, GColorWhite);
+#else
   window_set_background_color(window, GColorBlack);
+#endif
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
 
-  time_text_layer = text_layer_create(GRect(0, 74, 144-0, 168-68));
+  time_text_layer = text_layer_create(GRect(0, 72, 144-0, 168-72));
+#ifdef BLACK_ON_WHITE
+  text_layer_set_background_color(time_text_layer, GColorWhite);
+  text_layer_set_text_color(time_text_layer, GColorBlack);
+#else
   text_layer_set_background_color(time_text_layer, GColorBlack);
   text_layer_set_text_color(time_text_layer, GColorWhite);
+#endif
   text_layer_set_font(time_text_layer, fonts_get_system_font(FONT_KEY_ROBOTO_BOLD_SUBSET_49));
   text_layer_set_text(time_text_layer, "");
   text_layer_set_text_alignment(time_text_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(time_text_layer));
 
-  date_text_layer = text_layer_create(GRect(0, 130, 144-0, 168-128));
+  date_text_layer = text_layer_create(GRect(0, 130, 144-0, 168-130));
+#ifdef BLACK_ON_WHITE
+  text_layer_set_background_color(date_text_layer, GColorWhite);
+  text_layer_set_text_color(date_text_layer, GColorBlack);
+#else
   text_layer_set_background_color(date_text_layer, GColorBlack);
   text_layer_set_text_color(date_text_layer, GColorWhite);
+#endif
   text_layer_set_font(date_text_layer, fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21));
   text_layer_set_text(date_text_layer, "");
   text_layer_set_text_alignment(date_text_layer, GTextAlignmentCenter);
   layer_add_child(window_layer, text_layer_get_layer(date_text_layer));
 
-  canvas = layer_create(GRect(0, 6, bounds.size.w, bounds.size.h));
+  canvas = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
   layer_set_update_proc(canvas, draw_watch);
   layer_add_child(window_layer, canvas);
   image = *world_bitmap;
   image.addr = malloc(image.row_size_bytes * image.bounds.size.h);
+  draw_earth();
 }
 
 static void window_unload(Window *window) {
