@@ -187,9 +187,6 @@ static void init(void) {
 }
 
 static void deinit(void) {
-  // this write doesn't actully work for some reason
-  // Checking to see if it works better at a different location.
-  // persist_write_int(TIME_OFFSET_PERSIST, time_offset);
   tick_timer_service_unsubscribe();
   free(s);
   window_destroy(window);
