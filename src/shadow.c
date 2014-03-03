@@ -99,6 +99,12 @@ static void app_message_inbox_received(DictionaryIterator *iterator, void *conte
   int unixtime = t->value->int32;
   int now = (int)time(NULL);
   time_offset = unixtime - now;
+  status_t s = persist_write_int(TIME_OFFSET_PERSIST, time_offset); 
+  if (s) {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Saved time offset %d with status %d", time_offset, (int) s);
+  } else {
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "Failed to save time offset with status %d", (int) s);
+  }
   draw_earth();
 }
 
@@ -155,6 +161,13 @@ static void window_unload(Window *window) {
 static void init(void) {
   redraw_counter = 0;
 
+  // Load the UTC offset, if it exists
+  time_offset = 0;
+  if (persist_exists(TIME_OFFSET_PERSIST)) {
+    time_offset = persist_read_int(TIME_OFFSET_PERSIST);
+    APP_LOG(APP_LOG_LEVEL_DEBUG, "loaded offset %d", time_offset);
+  }
+
   world_bitmap = gbitmap_create_with_resource(RESOURCE_ID_WORLD);
 
   window = window_create();
@@ -166,13 +179,6 @@ static void init(void) {
   const bool animated = true;
   window_stack_push(window, animated);
 
-  // Load the UTC offset, if it exists
-  time_offset = 0;
-  if (persist_exists(TIME_OFFSET_PERSIST)) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "loaded offset");
-    time_offset = persist_read_int(TIME_OFFSET_PERSIST);
-  }
-
   s = malloc(STR_SIZE);
   tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
 
@@ -182,7 +188,8 @@ static void init(void) {
 
 static void deinit(void) {
   // this write doesn't actully work for some reason
-  persist_write_int(TIME_OFFSET_PERSIST, time_offset);
+  // Checking to see if it works better at a different location.
+  // persist_write_int(TIME_OFFSET_PERSIST, time_offset);
   tick_timer_service_unsubscribe();
   free(s);
   window_destroy(window);
