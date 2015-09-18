@@ -19,5 +19,9 @@
         "file": "world.png"
       }
     ]
-  }
+  },
+  "targetPlatforms": [
+    "aplite"
+  ],
+  "sdkVersion": "3"
 }
