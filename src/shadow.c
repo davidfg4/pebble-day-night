@@ -10,9 +10,12 @@
 static Window *window;
 static TextLayer *time_text_layer;
 static TextLayer *date_text_layer;
+#ifdef PBL_BW
 static GBitmap *world_bitmap;
+#else
+static GBitmap *three_worlds;
+#endif
 static Layer *canvas;
-// this is a manually created bitmap, of the same size as world_bitmap
 static GBitmap *image;
 static int redraw_counter;
 // s is set to memory of size STR_SIZE, and temporarily stores strings
@@ -49,11 +52,12 @@ static void draw_earth() {
   for(x = 0; x < WIDTH; x++) {
     int x_angle = (int)((float)TRIG_MAX_ANGLE * (float)x / (float)(WIDTH));
     for(y = 0; y < HEIGHT; y++) {
-      int byte = y * gbitmap_get_bytes_per_row(image) + (int)(x / 8);
       int y_angle = (int)((float)TRIG_MAX_ANGLE * (float)y / (float)(HEIGHT * 2)) - TRIG_MAX_ANGLE/4;
       // spherical law of cosines
       float angle = ((float)sin_lookup(sun_y)/(float)TRIG_MAX_RATIO) * ((float)sin_lookup(y_angle)/(float)TRIG_MAX_RATIO);
       angle = angle + ((float)cos_lookup(sun_y)/(float)TRIG_MAX_RATIO) * ((float)cos_lookup(y_angle)/(float)TRIG_MAX_RATIO) * ((float)cos_lookup(sun_x - x_angle)/(float)TRIG_MAX_RATIO);
+#ifdef PBL_BW
+      int byte = y * gbitmap_get_bytes_per_row(image) + (int)(x / 8);
       if ((angle < 0) ^ (0x1 & (((char *)gbitmap_get_data(world_bitmap))[byte] >> (x % 8)))) {
         // white pixel
         ((char *)gbitmap_get_data(image))[byte] = ((char *)gbitmap_get_data(image))[byte] | (0x1 << (x % 8));
@@ -61,6 +65,14 @@ static void draw_earth() {
         // black pixel
         ((char *)gbitmap_get_data(image))[byte] = ((char *)gbitmap_get_data(image))[byte] & ~(0x1 << (x % 8));
       }
+#else
+      int byte = y * gbitmap_get_bytes_per_row(three_worlds) + x;
+      if (angle < 0) { // dark pixel
+        ((char *)gbitmap_get_data(three_worlds))[byte] = ((char *)gbitmap_get_data(three_worlds))[WIDTH*HEIGHT + byte];
+      } else { // light pixel
+        ((char *)gbitmap_get_data(three_worlds))[byte] = ((char *)gbitmap_get_data(three_worlds))[WIDTH*HEIGHT*2 + byte];
+      }
+#endif
     }
   }
   layer_mark_dirty(canvas);
@@ -141,7 +153,11 @@ static void window_load(Window *window) {
   canvas = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
   layer_set_update_proc(canvas, draw_watch);
   layer_add_child(window_layer, canvas);
+#ifdef PBL_BW
   image = gbitmap_create_blank(GSize(WIDTH, HEIGHT), GBitmapFormat1Bit);
+#else
+  image = gbitmap_create_as_sub_bitmap(three_worlds, GRect(0, 0, WIDTH, HEIGHT));
+#endif
   draw_earth();
 }
 
@@ -162,7 +178,11 @@ static void init(void) {
     APP_LOG(APP_LOG_LEVEL_DEBUG, "loaded offset %d", time_offset);
   }
 
+#ifdef PBL_BW
   world_bitmap = gbitmap_create_with_resource(RESOURCE_ID_WORLD);
+#else
+  three_worlds = gbitmap_create_with_resource(RESOURCE_ID_THREE_WORLDS);
+#endif
 
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {
@@ -184,7 +204,11 @@ static void deinit(void) {
   tick_timer_service_unsubscribe();
   free(s);
   window_destroy(window);
+#ifdef PBL_BW
   gbitmap_destroy(world_bitmap);
+#else
+  gbitmap_destroy(three_worlds);
+#endif
 }
 
 int main(void) {

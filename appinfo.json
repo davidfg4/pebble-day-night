@@ -16,7 +16,14 @@
       {
         "type": "png",
         "name": "WORLD",
-        "file": "world.png"
+        "file": "world.png",
+        "targetPlatforms": ["aplite"]
+      },
+      {
+        "type": "png",
+        "name": "THREE_WORLDS",
+        "file": "three_worlds.png",
+        "targetPlatforms": ["basalt"]
       }
     ]
   },
